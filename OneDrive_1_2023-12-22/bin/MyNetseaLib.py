@@ -57,6 +57,7 @@ class MyNetseaLib():
 
         print_flug = True
 
+
         for count in range(wait):
             ##カートボタンが無ければログイン出来ていない
             try:
