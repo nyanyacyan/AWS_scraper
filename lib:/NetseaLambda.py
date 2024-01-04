@@ -37,7 +37,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from time import sleep
+from selenium.webdriver.common.keys import Keys
 import logging
 import json
 
@@ -48,9 +48,9 @@ def NetseaLambda_handler(event, context):
 
     logger.info(f"処理スタート")
 
-    url = "https://www.netsea.jp/"
+    url = "https://www.netsea.jp/login"
 
-    wait = 5
+    wait = 60
     print_flug = True
 
     # webdriver（Chrome）のオプションを使うことを宣言
@@ -62,7 +62,7 @@ def NetseaLambda_handler(event, context):
     options.add_argument("--hide-scrollbars")
     options.add_argument("--single-process")
     options.add_argument("--ignore-certificate-errors")
-    options.add_argument("--window-size=1200x1000")  # サイズを大きくすることでsend_keysでの
+    options.add_argument("--window-size=1920x1080")  # サイズを大きくすることでsend_keysでの
     options.add_argument("--no-sandbox")
     options.add_argument("--homedir=/tmp")
 
@@ -84,82 +84,82 @@ def NetseaLambda_handler(event, context):
 
 
     # リクエストのBODYを取得
-    request_body = event.get('local_jan_code')
+    request_body = event.get('body')
 
     logger.info("リクエストボディが存在します: %s", request_body)
     logger.info("ページロードを待機しています...")
 
     # ページが完全にロードされるのを待つ
-    WebDriverWait(browser, 3).until(
+    WebDriverWait(browser, 10).until(
         lambda browser: browser.execute_script('return document.readyState') == 'complete'
     )
 
     logger.info("ページが完全にロードされました。")
 
-    # 広告が出てきたらスキップ
-    ad_elements = browser.find_elements_by_xpath("//i[@class='fa fa-close']")
-    if len(ad_elements) > 0:
-        ad_elements[0].click()
-        sleep(1)  
-
-    print_flug = True
 
     # 広告が出てきたらスキップ→ 転記
     # ログインができてるかを確認→ 自動ログイン
     # waitの分だけ実施するためのループ処理
-    for count in range(wait):
-        ##カートボタンが無ければログイン出来ていない
-        try:
-            elements = browser.find_elements_by_xpath("//i[@class= 'fa fa-shopping-cart']")
-            if len(elements) < 1:
-                if print_flug:
-                    print("\033[34m■■■■■■NETSEAへ未ログインです。自動ログインをします■■■■■■\033[0m")
-                    print_flug = False
-                    browser.get("https://www.netsea.jp/login")
+    try:
+        logger.info("これからIDPASSを入力")
 
-                    username_field = browser.find_element_by_id("userId")
-                    password_field = browser.find_element_by_id("pass")
+        username_field = browser.find_element_by_id("userId")
+        logger.info("ID、検索OK")
 
-                    # 認証情報
-                    username_field.send_keys('info@abitora.jp')
-                    password_field.send_keys('Abitra2577')
+        password_field = browser.find_element_by_id("pass")
+        logger.info("パス、検索OK")
 
-                    # ログインボタンをクリック
-                    login_button = browser.find_element_by_xpath("//button[@class='btnType01 btnColor04 btnEffects fSize16 fNormal btmMgnSet']")
-                    login_button.click()
+        # 認証情報
+        logger.info("ID、入力開始")
+        username_field.send_keys('info@abitora.jp')
+        logger.info("ID入力完了")
+        password_field.send_keys('Abitra2577')
+        logger.info("パス入力完了")
 
-                else:
-                    print(".",end="")  # 待機を"."で表してる。
+        # ログインボタンをクリック
+        logger.info("ボタンクリック開始")
+        login_button = browser.find_element_by_name("submit")
+        logger.info("ボタン検索完了")
 
-            else:
-                print("\033[32mNETSEAへログイン済みです\033[0m")
-                return True  # ログイン成功
+        logger.info("完了確認")
+        # browser.execute_script("arguments[0].click();", login_button)
+        # login_button.click()
+        password_field.send_keys(Keys.ENTER)
+        logger.info("ボタンクリック完了")
 
-            sleep(5)
-        except NoSuchElementException:
-            print("ログインフォームの要素が見つかりません。")
-            return{'statusCode': 500, 'body': json.dumps('ログインフォーム要素が見つかりません')}
-        
-        except TimeoutException:
-            print("ページの読み込みがタイムアウトしました。")
-            return{'statusCode': 500, 'body': json.dumps('ページの読み込みタイムアウト')}
-        
-        except Exception as e:
-            print(f"予期せぬエラーが発生しました: {e}")
-            return{'statusCode': 500, 'body': json.dumps(f'予期せぬエラー: {e}')}
+        # ページが完全にロードされるのを待つ
+        logger.info("ページロード待機中...")
+        WebDriverWait(browser, 10).until(
+            lambda browser: browser.execute_script('return document.readyState') == 'complete'
+        )
+        logger.info("ページロード完了")
+
+    except NoSuchElementException:
+        print("ログインフォームの要素が見つかりません。")
+        return{'statusCode': 500, 'body': json.dumps('ログインフォーム要素が見つかりません')}
+    
+    except TimeoutException:
+        print("ページの読み込みがタイムアウトしました。")
+        return{'statusCode': 500, 'body': json.dumps('ページの読み込みタイムアウト')}
+    
+    except Exception as e:
+        print(f"予期せぬエラーが発生しました: {e}")
+        return{'statusCode': 500, 'body': json.dumps(f'予期せぬエラー: {e}')}
             
-
-    # #指定秒経過しても未ログインの場合Falseを返す
-    # return False
-
+    logger.info("json読み込み開始")
     if request_body:
         # jsonファイルの読み込みを実施
         # 読み込みができなかったらログを残す。
         try:
+            logger.info("json解析開始")
             request_data = json.loads(request_body)  # jsonを解析
+            logger.info("json解析終了")
 
             jan = request_data.get('jan')
+            logger.info("jan、解析完了")
+
             product_name = request_data.get('product_name')
+            logger.info("商品名、解析完了")
 
             logger.info(f"解析完了: JAN: {jan}, 商品名: {product_name}")
 
@@ -210,7 +210,7 @@ def NetseaLambda_handler(event, context):
 
         # ショーケースを見つける
         # 見つけるまで最大6秒、動的待機
-        all_showcasebox = WebDriverWait(browser, 3).until(
+        all_showcasebox = WebDriverWait(browser, 10).until(
             EC.presence_of_all_elements_located((By.XPATH, "//div[@class='showcaseBox']"))
         )
 
@@ -223,7 +223,7 @@ def NetseaLambda_handler(event, context):
         logger.info(f"'showcasebox'の数: {count_showcasebox}")
 
         # priceを探す
-        all_price = WebDriverWait(browser, 3).until(
+        all_price = WebDriverWait(browser, 10).until(
             EC.presence_of_all_elements_located((By.XPATH, "//div[@class='price']"))
         )
 
