@@ -50,7 +50,7 @@ def NetseaLambda_handler(event, context):
 
     url = "https://www.netsea.jp/"
 
-    wait = 60
+    wait = 5
     print_flug = True
 
     # webdriver（Chrome）のオプションを使うことを宣言
