@@ -1,17 +1,19 @@
+# AWS lambda
+# Python==3.7
 # coding: utf-8
 
 # ----------------------------------------------------------------------------------
-# ローカル　スクレイピング実行ファイル
-# 　制作2023.12.31
-#  使用ライブラリ
-#selenium==4.1.0
-#webdriver_manager==3.8.6
-#gspread==5.9.0
-#gspread-formatting==1.1.2
-#oauth2client==4.1.3
+# 「Netsea」のスクレイピング
+# 2023/1/10制作
 
 
-#   流れ
+#---使用ライブラリ---
+# selenium==3.141
+# Chromedriver==2.43
+# headless-chromium==69
+
+
+#---流れ---
 # 関数定義 → 自身の作成したファイルのを転記して修正
 # logger定義 → 自身の作成したファイルのを転記して修正
 # URL指定 → 自身の作成したファイルのを転記して修正
@@ -50,8 +52,6 @@ def NetseaLambda_handler(event, context):
 
     url = "https://www.netsea.jp/login"
 
-    wait = 60
-    print_flug = True
 
     # webdriver（Chrome）のオプションを使うことを宣言
     options = webdriver.ChromeOptions()
@@ -96,6 +96,16 @@ def NetseaLambda_handler(event, context):
 
     logger.info("ページが完全にロードされました。")
 
+    # # 試しに他のボタンをクリック
+    # try:
+    #     link = browser.find_element_by_xpath("//a[contains(text(), 'サプライヤーログインはこちら')]")
+    #     logger.info("クリック開始")
+    #     link.click()
+    #     logger.info("忘れた時場所をクリック")
+
+    # except:
+    #     logger.info("クリックできなかった。")
+
 
     # 広告が出てきたらスキップ→ 転記
     # ログインができてるかを確認→ 自動ログイン
@@ -121,10 +131,58 @@ def NetseaLambda_handler(event, context):
         login_button = browser.find_element_by_name("submit")
         logger.info("ボタン検索完了")
 
-        logger.info("完了確認")
-        # browser.execute_script("arguments[0].click();", login_button)
-        # login_button.click()
-        password_field.send_keys(Keys.ENTER)
+        # 入力されたユーザーIDを取得して確認
+        entered_username = username_field.get_attribute('value')
+        logger.info(f"入力されたユーザーID: {entered_username}")
+
+        # ボタンの状態を確認
+        is_displayed = login_button.is_displayed()
+        is_enabled = login_button.is_enabled()
+        class_attribute = login_button.get_attribute('class')
+
+        # ボタンの状態をログに出力
+        logger.info(f"ボタンの表示状態: {is_displayed}, 有効状態: {is_enabled}, クラス属性: {class_attribute}")
+
+        try:
+            login_button = browser.find_element_by_class_name("btnType01")
+            logger.info("クリック開始")
+            login_button.click()
+            logger.info("忘れた時場所をクリック")
+
+        except:
+            logger.info("クリックできなかった。")
+            return
+
+        # if login_button.is_enabled():
+        # # browser.execute_script("arguments[0].click();", login_button)
+        #     click_count = 2
+
+        #     logger.info("繰り返し処理開始")
+
+        #     for _ in range(click_count):
+        #         logger.info("ループ処理開始")
+        #         browser.execute_script("arguments[0].click();", login_button)
+        #         try:
+        #             WebDriverWait(browser, 10).until(
+        #                 EC.visibility_of_element_located((By.CSS_SELECTOR, "a[href='https://www.netsea.jp/cart']"))
+        #             )
+        #             break
+        #         except TimeoutException:
+        #             continue
+        #     else:
+        #         logger.info("2回クリックしても反応なし")
+
+        #         # ブラウザのコンソールログを取得
+        #         console_logs = browser.get_log('browser')
+
+        #         # コンソールログをLambdaのログに出力
+        #         for entry in console_logs:
+        #             logger.info(f"{entry['level']} - {entry['message']}")
+
+        # else:
+        #     logger.info("ボタンが押下できない状態になっている")
+
+        # password_field.send_keys(Keys.ENTER)
         logger.info("ボタンクリック完了")
 
         # ページが完全にロードされるのを待つ

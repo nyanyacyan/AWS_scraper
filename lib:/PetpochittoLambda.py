@@ -1,14 +1,16 @@
+# AWS lambda
+# Python==3.7
 # coding: utf-8
 
 # ----------------------------------------------------------------------------------
-# ローカル　スクレイピング実行ファイル
-# 　制作2023.12.31
-#  使用ライブラリ
-#selenium==4.1.0
-#webdriver_manager==3.8.6
-#gspread==5.9.0
-#gspread-formatting==1.1.2
-#oauth2client==4.1.3
+# 「ポチッと」のスクレイピング
+# 2023/1/10制作
+
+
+#---使用ライブラリ---
+# selenium==3.141
+# Chromedriver==2.43
+# headless-chromium==69
 
 
 #   流れ
