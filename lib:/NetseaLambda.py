@@ -44,7 +44,7 @@ import logging
 import json
 
 
-def NetseaLambda_handler(event, context):
+def handler(event, context):
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
