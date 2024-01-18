@@ -13,5 +13,5 @@ RUN dnf install -y atk cups-libs gtk3 libXcomposite alsa-lib \
 RUN pip install selenium==4.15.2
 COPY --from=build /opt/chrome-linux64 /opt/chrome
 COPY --from=build /opt/chromedriver-linux64 /opt/
-COPY NetseaLambda.py ./
-CMD [ "NetseaLambda.handler" ]
+COPY main.py ./
+CMD [ "main.handler" ]
